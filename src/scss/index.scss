@@ -1,0 +1,15 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+
+* {
+  font-family: "Roboto", sans-serif;
+}
+
+.store-product {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+
+  .store-product-item {
+    flex-basis: calc(33.33% - 20px);
+  }
+}
