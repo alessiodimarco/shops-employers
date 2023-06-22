@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { FormControlLabel, FormGroup, Switch } from "@material-ui/core";
 import { StoreProduct } from "../common.tsx/interfaces";
 import { Product } from "./Product";
 
@@ -10,20 +11,28 @@ export interface ProductGridProps {
 
 export interface ProductProps {
   productData: StoreProduct;
-  layout: "panel" | "grid";
+  defaultLayout: boolean;
   onDelete: (productId: string) => Promise<void>;
 }
 
 export const ProductGrid = ({ productData, onDelete }: ProductGridProps) => {
-  const [panelLayout, setPanel] = useState("panel");
+  const [switchLayout, setSwitchLayout] = useState(false);
 
   return (
-    <div className="store-product">
-      {productData.map(product => (
-        <div key={product.id} className="store-product-item">
-          <Product layout="panel" productData={product} onDelete={onDelete} />
-        </div>
-      ))}
-    </div>
+    <>
+      <FormGroup>
+        <FormControlLabel
+          control={<Switch color="primary" onChange={() => setSwitchLayout(!switchLayout)} defaultChecked />}
+          label="Switch Layout"
+        />
+      </FormGroup>
+      <div className="store-product" style={{ flexDirection: switchLayout ? "column" : "row" }}>
+        {productData.map(product => (
+          <div key={product.id} className="store-product-item">
+            <Product defaultLayout={switchLayout} productData={product} onDelete={onDelete} />
+          </div>
+        ))}
+      </div>
+    </>
   );
 };
