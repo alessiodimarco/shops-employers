@@ -1,15 +1,35 @@
+@use "./LoadingSpinner";
+@use "./Menu";
+@use "./StoreInfo";
+
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+// * Components
 
 * {
   font-family: "Roboto", sans-serif;
 }
 
+a {
+  text-decoration: none;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+
+  li {
+    list-style: none;
+  }
+}
+
+.container {
+  max-width: 1200px;
+  margin: auto;
+}
+
 .store-product {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 20px;
-
-  .store-product-item {
-    flex-basis: calc(33.33% - 20px);
-  }
 }

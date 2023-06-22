@@ -1,57 +1,81 @@
+//import Rating from "@mui/material/Rating";
+import { Snackbar } from "@material-ui/core";
 import { useEffect, useState } from "react";
-import { getStoreData, getStoreProduct } from "../common.tsx/api";
+import { deleteStoreProduct, getPromiseStoreData, getPromiseStoreProduct, getStoreProduct } from "../common.tsx/api";
 import { StoreData, StoreProduct } from "../common.tsx/interfaces";
+import { LoadingSpinner } from "../components/LoadingSpinner";
+import { Menu } from "../components/Menu";
+import { ProductGrid } from "../components/ProductGrid";
+import { StoreInfo } from "../components/StoreInfo";
 
 function App() {
   const [storeData, setStoreData] = useState<StoreData>({ category: "", employees: [], name: "" });
   const [storeDataProduct, setStoreDataProduct] = useState<StoreProduct[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showMessage, setShowMessage] = useState(false);
 
   useEffect(() => {
-    const _handleFetchStore = async () => {
-      try {
-        let newData: StoreData = await getStoreData();
-        setStoreData(newData);
-      } catch (e) {
-        console.log((e as Error).message);
-      }
-    };
-
-    const _handleFetchStoreProduct = async () => {
-      try {
-        let newData: StoreProduct[] = await getStoreProduct();
-        setStoreDataProduct(newData);
-      } catch (e) {
-        console.log((e as Error).message);
-      }
-    };
-
-    _handleFetchStore();
-    _handleFetchStoreProduct();
+    handleInitialData();
   }, []);
+
+  const handleInitialData = async () => {
+    setIsLoading(true);
+    //get store data
+    const pStoreData = getPromiseStoreData();
+    //get products data
+    const pProductsData = getPromiseStoreProduct();
+
+    const responses = await Promise.all([pStoreData, pProductsData]);
+    const [resStoreData, resStoreDataProduct] = (await Promise.all(responses.map(r => r.json()))) as [
+      StoreData,
+      StoreProduct[]
+    ];
+    setStoreData(resStoreData);
+    setStoreDataProduct(resStoreDataProduct);
+    setIsLoading(false);
+  };
+
+  const handleFetchStoreProduct = async () => {
+    setIsLoading(true);
+    try {
+      let newData: StoreProduct[] = await getStoreProduct();
+      setStoreDataProduct(newData);
+      setIsLoading(false);
+    } catch (e) {
+      console.log((e as Error).message);
+    }
+  };
+
+  const handleDeleteStoreProduct = async (productId: string) => {
+    try {
+      await deleteStoreProduct(productId);
+      setShowMessage(true);
+      handleFetchStoreProduct();
+    } catch (e) {
+      console.log((e as Error).message);
+    }
+  };
 
   return (
     <div className="App">
-      <header className="App-header"></header>
-
-      <div className="store-info">
-        <h1>{storeData.name}</h1>
-        <h2>{storeData.category}</h2>
-        <ul>
-          {storeData.employees.map((empl, i) => (
-            <li key={i}>{empl}</li>
-          ))}
-        </ul>
-      </div>
-      <div className="store-product">
-        {storeDataProduct.map(product => (
-          <div key={product.id} className="store-product-item">
-            <p>{product.data.title}</p>
-            <p>{product.data.description}</p>
-            <p>{product.data.price}</p>
-            <p>{product.data.category}</p>
-          </div>
-        ))}
-      </div>
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : (
+        <>
+          <Menu />
+          <StoreInfo data={storeData} />
+          <h2 className="product-list">Product List</h2>
+          <ProductGrid productData={storeDataProduct} onDelete={handleDeleteStoreProduct} />
+          {showMessage && (
+            <Snackbar
+              open={showMessage}
+              onClose={() => setShowMessage(false)}
+              autoHideDuration={3000}
+              message="Product Deleted"
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }
